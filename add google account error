@@ -1,0 +1,85 @@
+biglinux_troubleshoot
+
+Resposta encontra pelo nosso mestre @BIGBRUNO
+
+" - Depois de 2 dias inteiros procurando o pq da integração com o Google Drive no Plasma ser tão problemático, fiz inúmeros testes e modificações, cheguei a 2 problemas, um é específico do Arch e derivados, um patch que modifica a identificação do Qtwebengine, e fica no pacote signon-ui
+
+Isso resolve o primeiro problema, ao tentar fazer login, antes mesmo de colocar a senha já da erro, então não é um problema diretamente do plasma, mas que ocorre em muitos locais
+
+Então surge outro problema, ao digitar a senha e enviar: This app is blocked
+
+Esse que foi o problema difícil realmente, tive que entender o funcionamento de várias partes de como é feita a liberação da permissão, até que eu cheguei ao ponto que a integração falha só por causa do Google Drive, outras partes não geram o problema, mas no Gnome funciona a integração com o Google Drive, então fui entender como que funciona por lá e resolvi tentar trazer para o Plasma, utilizando a
+
+Utilizando o ClientId e o ClientSecret do Gnome e o restante da configuração adaptada, então o Google Drive está funcionando no Plasma
+
+Tudo indica que o ClientId utilizado no Plasma está com problema
+
+Esse arquivo fica na pasta /usr/share/accounts/providers/kde/ sobrepondo o atual por ele, irá conectar no Google Drive usando o ClientId do Gnome
+
+Fonte de pesquisa: https://discuss.kde.org/t/kde-online-accounts-not-signing-in/3411/38
+
+Bruno823 curtiu isso.
+Ruscher respondeu.
+Apr 24 2024
+3
+389
+159
+28
+2 meses depois
+Ruscher
+Level 228
+9 Jan
+500+ Likes
+thiago-brgs
+
+Edite o arquivo:
+/usr/share/accounts/providers/kde/google.provider
+
+Apague e cole esse:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<provider id="google">
+  <name>Google</name>
+  
+  <description>GNOME-ID, Google Drive and YouTube</description>
+  <icon>im-google</icon>
+  <translations>kaccounts-providers</translations>
+  <domains>.*google\.com</domains>
+
+  <template>
+    <group name="auth">
+      <setting name="method">oauth2</setting>
+      <setting name="mechanism">web_server</setting>
+      <group name="oauth2">
+        <group name="web_server">
+          <setting name="Host">accounts.google.com</setting>
+          <setting name="AuthPath">o/oauth2/auth?access_type=offline</setting>
+          <setting name="TokenPath">o/oauth2/token</setting>
+          <setting name="RedirectUri">http://localhost/oauth2callback</setting>
+          
+          <setting name="ResponseType">code</setting>
+          <setting type="as" name="Scope">[
+              'https://www.googleapis.com/auth/userinfo.email',
+              'https://www.googleapis.com/auth/userinfo.profile',
+              'https://www.googleapis.com/auth/calendar',
+              'https://www.googleapis.com/auth/tasks',
+              'https://www.googleapis.com/auth/drive'
+          ]</setting>
+          <setting type="as" name="AllowedSchemes">['https']</setting>
+          <setting name="ClientId">44438659992-7kgjeitenc16ssihbtdjbgguch7ju55s.apps.googleusercontent.com</setting>
+          <setting name="ClientSecret">-gMLuQyDiI0XrQS_vx_mhuYF</setting>
+          <setting type="b" name="ForceClientAuthViaRequestBody">true</setting>
+        </group>
+      </group>
+    </group>
+  </template>
+</provider>
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Grato
+Rafael Ruscher
+
+
+Adicione de novo sua conta google 
+na authentificacao depois da palavra passe escolha so o drive em vez de tudo (youtube e agenda nao)
