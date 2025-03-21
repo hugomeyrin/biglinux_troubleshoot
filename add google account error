@@ -32,6 +32,10 @@ Level 228
 500+ Likes
 thiago-brgs
 
+Install kio-drive 
+sudo pacman -S kio-gdrive 
+
+
 Edite o arquivo:
 /usr/share/accounts/providers/kde/google.provider
 
